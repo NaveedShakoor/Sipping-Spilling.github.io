@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sipping & Spilling</title>
+    <style>
+        :root {
+            --pink: #FFB5C5;
+            --black: #000000;
+            --white: #ffffff;
+            --tight-line: 1.0; 
+            --tight-letter: -0.03em;
+        }
+
+        body, html {
+            margin: 0; padding: 0; height: 100%;
+            background-color: var(--white);
+            color: var(--black);
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            overflow: hidden;
+            display: flex; justify-content: center; align-items: center;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .stage {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: min(1100px, 94vw);
+            height: 100%;
+            text-align: center;
+            position: relative;
+            pointer-events: none; 
+        }
+
+        .header-title {
+            position: absolute;
+            top: 50px;
+            font-size: 1.1rem;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+
+        .cup-area {
+            height: auto;
+            display: none; 
+            align-items: flex-end;
+            justify-content: center;
+        }
+
+        .cup-img {
+            height: clamp(320px, 36vh, 500px);
+            width: auto;
+            display: block;
+        }
+
+        .slide-content {
+            min-height: 110px; 
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            width: 100%;
+            margin-top: -10px;
+        }
+
+        p {
+            font-size: 1.9rem;
+            font-weight: 400;
+            line-height: var(--tight-line);
+            letter-spacing: var(--tight-letter);
+            margin: 0;
+            display: none; 
+            max-width: 100%;
+        }
+
+        p.active { display: block; animation: fadeIn 0.8s ease forwards; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* TRANSCRIPT STYLES */
+        .transcript-link {
+            display: block;
+            margin-top: 40px;
+            font-size: 1.1rem;
+            color: #999;
+            text-decoration: underline;
+            cursor: pointer;
+            pointer-events: auto;
+        }
+
+        #transcript-container {
+            display: none;
+            width: 100%;
+            max-height: 70vh;
+            overflow-y: auto;
+            text-align: left;
+            padding: 20px;
+            pointer-events: auto;
+            scrollbar-width: none;
+        }
+        #transcript-container::-webkit-scrollbar { display: none; }
+
+        .transcript-entry {
+            margin-bottom: 40px;
+            border-left: 2px solid #eee;
+            padding-left: 20px;
+        }
+
+        .t-question { font-size: 0.8rem; color: #aaa; margin-bottom: 8px; }
+        .t-answer { font-size: 1.6rem; line-height: 1.1; letter-spacing: -0.02em; }
+        .t-fallback { font-style: italic; color: #ccc; }
+
+        /* RECORDING UI */
+        .controls {
+            margin-top: 40px;
+            height: 120px;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            pointer-events: auto;
+        }
+
+        .pink-circle {
+            width: 65px; height: 65px;
+            background-color: var(--pink);
+            border-radius: 50%; border: none;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .pink-circle.recording { animation: pulse 1.2s infinite; background-color: #ff8fa3; }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+        }
+
+        .status-text { font-size: 0.85rem; color: #999; }
+        
+        .tap-hint {
+            position: fixed; bottom: 40px; font-size: 0.8rem; color: #ccc;
+            letter-spacing: 0.1em; text-transform: uppercase; animation: breathe 2s infinite;
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        }
+        @keyframes breathe { 0%, 100% { opacity: 0.3; } 50% { opacity: 0.8; } }
+    </style>
+</head>
+<body>
+
+    <div class="stage">
+        <div class="header-title" id="site-header">Sipping & Spilling</div>
+
+        <div class="cup-area" id="cup-area">
+            <img id="dynamic-cup" src="Teacups/Untitled_Artwork-1.png" class="cup-img" onerror="this.style.display='none'">
+        </div>
+
+        <div class="slide-content">
+            <p class="active">I used to think I needed to create something meaningful.<br>Something lasting. Something I could point to.</p>
+            <p>I wanted to be like Salvador Dalí.<br>Or write like Rabindranath Tagore.</p>
+            <p>But the most meaningful moments in my life…<br>never looked like that.</p>
+            <p>They looked like this</p>
+            <p data-cup="1">Sitting across from someone.<br>Letting the conversation wander.<br>Saying things we didn’t plan to say.</p>
+            <p data-cup="2">Sipping & Spilling</p>
+            <p data-cup="3">A friend once told me my strength wasn’t in what I create.<br>It was in how I understand.</p>
+            <p data-cup="4">And I realized: the best conversations don’t produce something.</p>
+            <p data-cup="5">They reveal something.</p>
+            <p data-cup="5">This is a small space for that kind of conversation.</p>
+            <p data-cup="5">Just you, a few questions…<br>and a cup of coffee.</p>
+            
+            <p class="is-question" data-cup="6">What is a color that represents this coming age?<br>Why are you drawn to that color specifically?</p>
+            <p class="is-question" data-cup="7">What is one thing you’re finally over?<br>What’s something you’ve never gotten over?</p>
+            <p class="is-question" data-cup="8">If you could have a cafe, what would you name it?<br>What would be your signature dish?</p>
+            <p class="is-question" data-cup="9">Do you have that “one thing” in life<br>that you feel destined to do?</p>
+            <p class="is-question" data-cup="9">Who’s your roman empire in your life?<br>What makes you think about them?</p>
+            
+            <p data-cup="9">Conversations like this are easy to forget.<br>But something in you is a little clearer now.</p>
+
+            <p id="rewind-slide">
+                Don't you sometimes wish you could rewind on a conversation?<br>Now you can.
+                <span class="transcript-link" id="request-btn">Request transcript</span>
+            </p>
+
+            <div id="transcript-container"></div>
+        </div>
+
+        <div class="controls" id="audio-ui">
+            <button class="pink-circle" id="record-btn"></button>
+            <span class="status-text" id="record-text">Press Record & Spill.</span>
+        </div>
+
+        <div class="tap-hint" id="tap-hint">Tap to begin</div>
+    </div>
+
+    <script>
+        let current = 0;
+        let hasRecordedForCurrent = false; // THE GATEKEEPER
+        const slides = document.querySelectorAll('p');
+        const cupArea = document.getElementById('cup-area');
+        const cupImg = document.getElementById('dynamic-cup');
+        const header = document.getElementById('site-header');
+        const ui = document.getElementById('audio-ui');
+        const recordBtn = document.getElementById('record-btn');
+        const hint = document.getElementById('tap-hint');
+
+        let isRecording = false;
+        let micStream = null;
+        let recognitionWarmedUp = false;
+        let shouldKeepRecognitionRunning = false;
+        let conversationLog = [];
+        let currentSpeech = "";
+        let finalTranscript = "";
+        let silenceRaf = null;
+        let audioCtx = null;
+        let analyser = null;
+        let micSource = null;
+        let lastVoiceAt = 0;
+        let heardAnyVoice = false;
+
+        const SILENCE_MS_TO_ADVANCE = 1100;
+        const SILENCE_RMS_THRESHOLD = 0.012; // lower = more sensitive
+
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const recognition = SpeechRecognition ? new SpeechRecognition() : null;
+        if (recognition) {
+            recognition.continuous = true;
+            recognition.interimResults = true;
+            recognition.onresult = (e) => {
+                // Keep the mic session alive, but only capture text while "recording".
+                if (!isRecording) return;
+                let interim = "";
+                for (let i = e.resultIndex; i < e.results.length; i++) {
+                    const res = e.results[i];
+                    const text = (res[0]?.transcript || "").trim();
+                    if (!text) continue;
+                    if (res.isFinal) finalTranscript += (finalTranscript ? " " : "") + text;
+                    else interim += (interim ? " " : "") + text;
+                }
+                currentSpeech = (finalTranscript + (interim ? " " + interim : "")).trim();
+            };
+            recognition.onend = () => {
+                // Some browsers end recognition unexpectedly; restart if we want it warmed up.
+                if (!shouldKeepRecognitionRunning) return;
+                try { recognition.start(); } catch (_) {}
+            };
+        }
+
+        async function ensureMicPermission() {
+            // Prompt once, then reuse the same MediaStream so future presses don't re-request.
+            if (micStream && micStream.active) return micStream;
+            micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            return micStream;
+        }
+
+        async function warmUpRecognitionOnce() {
+            if (!recognition || recognitionWarmedUp) return;
+            // Keep recognition alive so pressing record doesn't re-trigger prompts.
+            shouldKeepRecognitionRunning = true;
+            try {
+                recognition.start();
+                recognitionWarmedUp = true;
+            } catch (_) {
+                // If already started or blocked, we'll try again on the next interaction.
+            }
+        }
+
+        const CUP_PATHS = ["Teacups/Untitled_Artwork-1.png", "Teacups/Untitled_Artwork-2.png", "Teacups/Untitled_Artwork-3.png", "Teacups/Untitled_Artwork-4.png", "Teacups/Untitled_Artwork-5.png", "Teacups/Untitled_Artwork-6.png", "Teacups/Untitled_Artwork-7.png", "Teacups/Untitled_Artwork-8.png"];
+        const TOTAL_QUESTIONS = Array.from(slides).filter(s => s.classList.contains('is-question')).length;
+        let cupIdx = 0;
+        let cupAnimRaf = null;
+        let hasRefilledAfterQuestions = false;
+
+        // Preload cup frames for smoother animations.
+        CUP_PATHS.forEach((src) => { const img = new Image(); img.src = src; });
+
+        function setCup(level) {
+            const idx = Math.max(0, Math.min(CUP_PATHS.length-1, level));
+            cupIdx = idx;
+            cupImg.src = CUP_PATHS[idx];
+            cupImg.style.display = "block";
+        }
+
+        function animateCupTo(targetLevel, { durationMs = 850 } = {}) {
+            const target = Math.max(0, Math.min(CUP_PATHS.length - 1, targetLevel));
+            if (target === cupIdx) return;
+            if (cupAnimRaf) cancelAnimationFrame(cupAnimRaf);
+
+            const start = cupIdx;
+            const delta = target - start;
+            const startTs = performance.now();
+
+            const tick = (now) => {
+                const t = Math.min(1, (now - startTs) / durationMs);
+                const eased = 1 - Math.pow(1 - t, 3);
+                const next = Math.round(start + delta * eased);
+                if (next !== cupIdx) setCup(next);
+                if (t < 1) cupAnimRaf = requestAnimationFrame(tick);
+                else cupAnimRaf = null;
+            };
+
+            cupAnimRaf = requestAnimationFrame(tick);
+        }
+
+        function goNext() {
+            // CHECK IF WE ARE ALLOWED TO PROCEED
+            if (slides[current].classList.contains('is-question') && !hasRecordedForCurrent) {
+                document.getElementById('record-text').innerText = "Please spill your heart first.";
+                recordBtn.style.transform = "scale(1.1)";
+                setTimeout(() => recordBtn.style.transform = "scale(1)", 200);
+                return;
+            }
+
+            if (current < slides.length - 1) {
+                hint.style.display = "none";
+                slides[current].classList.remove('active');
+                current++;
+                slides[current].classList.add('active');
+
+                // Reset gatekeeper for the new slide
+                hasRecordedForCurrent = false;
+
+                if (current >= 4) {
+                    cupArea.style.display = "flex";
+                    header.style.opacity = "1";
+                    const qCount = Array.from(slides).slice(0, current + 1).filter(s => s.classList.contains('is-question')).length;
+                    const isQuestionSlide = slides[current].classList.contains('is-question');
+
+                    // After all questions, refill ONCE then linger full.
+                    if (!isQuestionSlide && qCount >= TOTAL_QUESTIONS) {
+                        if (!hasRefilledAfterQuestions) {
+                            // Start from whatever the current cup frame is and animate to "full".
+                            hasRefilledAfterQuestions = true;
+                            animateCupTo(0, { durationMs: 1200 });
+                        } else {
+                            // Keep it full on every subsequent slide.
+                            setCup(0);
+                        }
+                    } else {
+                        // Normal behavior during intro + questions: empty as questions progress.
+                        setCup(qCount);
+                    }
+                }
+
+                if (slides[current].classList.contains('is-question')) {
+                    ui.style.display = "flex";
+                    document.getElementById('record-text').innerText = "Press Record & Spill.";
+                } else {
+                    ui.style.display = "none";
+                }
+            }
+        }
+
+        function stopSilenceWatcher() {
+            if (silenceRaf) cancelAnimationFrame(silenceRaf);
+            silenceRaf = null;
+        }
+
+        function startSilenceWatcher() {
+            stopSilenceWatcher();
+            if (!micStream) return;
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (!analyser) {
+                analyser = audioCtx.createAnalyser();
+                analyser.fftSize = 2048;
+            }
+            if (!micSource) micSource = audioCtx.createMediaStreamSource(micStream);
+            micSource.connect(analyser);
+
+            const buf = new Uint8Array(analyser.fftSize);
+            lastVoiceAt = performance.now();
+            heardAnyVoice = false;
+
+            const tick = () => {
+                if (!isRecording) return;
+                analyser.getByteTimeDomainData(buf);
+                let sumSq = 0;
+                for (let i = 0; i < buf.length; i++) {
+                    const v = (buf[i] - 128) / 128;
+                    sumSq += v * v;
+                }
+                const rms = Math.sqrt(sumSq / buf.length);
+                const now = performance.now();
+                if (rms > SILENCE_RMS_THRESHOLD) {
+                    heardAnyVoice = true;
+                    lastVoiceAt = now;
+                }
+                if (heardAnyVoice && now - lastVoiceAt > SILENCE_MS_TO_ADVANCE) {
+                    stopRecording({ autoAdvance: true });
+                    return;
+                }
+                silenceRaf = requestAnimationFrame(tick);
+            };
+
+            silenceRaf = requestAnimationFrame(tick);
+        }
+
+        function startRecordingUI() {
+            isRecording = true;
+            finalTranscript = "";
+            currentSpeech = "";
+            recordBtn.classList.add('recording');
+            document.getElementById('record-text').innerText = "Sipping and listening...";
+        }
+
+        function stopRecording({ autoAdvance = false } = {}) {
+            if (!isRecording) return;
+            isRecording = false;
+            stopSilenceWatcher();
+
+            hasRecordedForCurrent = true; // UNLOCK THE GATE
+
+            conversationLog.push({
+                question: slides[current].innerText.split('?')[0] + '?',
+                answer: (finalTranscript || currentSpeech).trim() || "some things are better left unread"
+            });
+
+            recordBtn.classList.remove('recording');
+            document.getElementById('record-text').innerText = autoAdvance
+                ? "Spilled."
+                : "Spilled. Tap anywhere to continue.";
+
+            if (autoAdvance) {
+                // Small pause so the UI updates before moving on.
+                setTimeout(() => goNext(), 250);
+            }
+        }
+
+        document.body.addEventListener('click', (e) => {
+            if (e.target.closest('#record-btn') || e.target.closest('#request-btn') || isRecording) return;
+            goNext();
+        });
+
+        recordBtn.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            if (!isRecording) {
+                try {
+                    await ensureMicPermission();
+                    await warmUpRecognitionOnce();
+                    startRecordingUI();
+                    startSilenceWatcher();
+                } catch (err) {
+                    alert("Mic access required.");
+                }
+            } else {
+                stopRecording({ autoAdvance: false });
+            }
+        });
+
+        document.getElementById('request-btn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            document.getElementById('rewind-slide').style.display = "none";
+            cupArea.style.display = "none";
+            const box = document.getElementById('transcript-container');
+            box.style.display = "block";
+            box.innerHTML = conversationLog.map(entry => `
+                <div class="transcript-entry">
+                    <div class="t-question">${entry.question}</div>
+                    <div class="t-answer ${entry.answer.includes('unread') ? 't-fallback' : ''}">${entry.answer}</div>
+                </div>
+            `).join('');
+        });
+    </script>
+</body>
+</html>
